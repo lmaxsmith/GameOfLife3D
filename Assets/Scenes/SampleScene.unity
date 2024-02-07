@@ -462,7 +462,21 @@ MonoBehaviour:
   maximumBirth: 3
   _generationInterval: 1
   _seedSize: {x: 10, y: 10, z: 10}
-  _seedProbability: 0.5
+  _seedProbability: 0.1
+  _cellPrefab: {fileID: 6986521007762722683, guid: 83c2bc92a043345d3839eb434b413e52,
+    type: 3}
+  _cellMaterials:
+  - {fileID: 2100000, guid: b6207a2ce16d645529643e8147938c7f, type: 2}
+  - {fileID: 2100000, guid: 95336a73db50a417bab9396627558976, type: 2}
+  - {fileID: 2100000, guid: 3f62e48b409544dc0abf6db8c424842b, type: 2}
+  - {fileID: 2100000, guid: 8ed4b2aa2d6b148f3a4fa1dc336acc5d, type: 2}
+  - {fileID: 2100000, guid: 27ebaf2db9ecf42ba8c1ac3b3e82b4a8, type: 2}
+  - {fileID: 2100000, guid: f6c923c0e03e54b4cb34c529e63ce897, type: 2}
+  - {fileID: 2100000, guid: f66a79b0595584785bb9a02672b8393d, type: 2}
+  - {fileID: 2100000, guid: cbbe5f53d092c4f6a852f8be0f3599dc, type: 2}
+  - {fileID: 2100000, guid: bc039b3fc53ac4e60bbf6d8a6e5aae1b, type: 2}
+  _generationCount: 0
+  _livingCellCount: 0
 --- !u!4 &1469291203
 Transform:
   m_ObjectHideFlags: 0

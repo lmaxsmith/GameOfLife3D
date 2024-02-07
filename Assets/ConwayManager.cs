@@ -7,6 +7,7 @@ public class ConwayManager : MonoBehaviour
 
     #region ==== Public Options ====------------------
 
+    [Header("Rules")]
     public int deathbyLoneliness = 2;
     public int deathbyOverpopulation = 4;
     public int minimumBirth = 3;
@@ -14,15 +15,27 @@ public class ConwayManager : MonoBehaviour
 
     public float _generationInterval = 1.0f;
     
+    [Header("Setup")]
     public Vector3Int _seedSize = new Vector3Int(10, 10, 10); 
     public float _seedProbability = 0.5f;
     
+    [Header("Visuals")]
+    public CellVis _cellPrefab;
+    public List<Material> _cellMaterials;
     #endregion -----------------/Public Options ====
 
+    #region ==== Reporting ====------------------
+
+    [Header("Reporting")]
+    public int _generationCount = 0;
+    public int _livingCellCount = 0;
+
+    #endregion -----------------/Reporting ====
+    
 
     #region ==== Private storage ====------------------
     
-    private HashSet<Vector3Int> _livingCells = new HashSet<Vector3Int>();
+    private Dictionary<Vector3Int, CellVis> _livingCells = new Dictionary<Vector3Int, CellVis>();
     private List<GameObject> _cellObjects = new List<GameObject>();
 
     #endregion -----------------/Private storage ====
@@ -31,7 +44,6 @@ public class ConwayManager : MonoBehaviour
     void Start()
     {
         InitializeSeed();
-        VisualizeCells();
     }
 
     
@@ -47,6 +59,21 @@ public class ConwayManager : MonoBehaviour
         }
     }
 
+    public void IterateOnNeighbors(Vector3Int position, System.Action<Vector3Int> action)
+    {
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                for (int z = -1; z <= 1; z++)
+                {
+                    if (x == 0 && y == 0 && z == 0) continue;
+                    action(position + new Vector3Int(x, y, z));
+                }
+            }
+        }
+    }
+    
     public void InitializeSeed()
     {
         for (int x = -_seedSize.x / 2; x < _seedSize.x / 2; x++)
@@ -57,7 +84,7 @@ public class ConwayManager : MonoBehaviour
                 {
                     if (Random.value < _seedProbability)
                     {
-                        _livingCells.Add(new Vector3Int(x, y, z));
+                        CellBirth(new Vector3Int(x, y, z));
                     }
                 }
             }
@@ -66,88 +93,109 @@ public class ConwayManager : MonoBehaviour
     
     public void EvaluateGeneration()
     {
-        //gather all cells to check
         HashSet<Vector3Int> cellsToCheck = new HashSet<Vector3Int>();
-        HashSet<Vector3Int> resultSet = new HashSet<Vector3Int>();
+        Dictionary<Vector3Int, CellAction> resultDic = new Dictionary<Vector3Int, CellAction>();
         
+        //gather all cells to check
         foreach (var cell in _livingCells)
         {
-            for (int x = -1; x <= 1; x++)
-            {
-                for (int y = -1; y <= 1; y++)
-                {
-                    for (int z = -1; z <= 1; z++)
-                    {
-                        cellsToCheck.Add(cell + new Vector3Int(x, y, z));
-                    }
-                }
-            }
+            IterateOnNeighbors(cell.Key, (neighbor) =>
+                { cellsToCheck.Add(neighbor); });
         }
         
-        //count living neighbors
+        //check each cell
         foreach (var candidate in cellsToCheck)
         {
             CheckCandidate(candidate);
         }
-        _livingCells = resultSet;
+
+        //visualize results
+        foreach (var result in resultDic)
+        {
+            switch (result.Value)
+            {
+                case CellAction.birth:
+                    CellBirth(result.Key);
+                    break;
+                case CellAction.death:
+                    CellDeath(result.Key);
+                    break;
+                case CellAction.stayinAlive:
+                    CellStayinAlive(result.Key);
+                    break;
+            }
+        }
         
-        VisualizeCells();
+        //reporting
+        _generationCount++;
+        _livingCellCount = _livingCells.Count;
 
 
         void CheckCandidate(Vector3Int candidate)
         {
             int livingNeighbors = 0;
 
-            for (int x = -1; x <= 1; x++)
+            //count neighbors
+            IterateOnNeighbors(candidate, (neighbor) =>
             {
-                for (int y = -1; y <= 1; y++)
-                {
-                    for (int z = -1; z <= 1; z++)
-                    {
-                        if (x == 0 && y == 0 && z == 0) continue;
-                        if (_livingCells.Contains(candidate + new Vector3Int(x, y, z)))
-                        {
-                            livingNeighbors++;
-                        }
-                    }
-                }
-            }
+                if (_livingCells.ContainsKey(neighbor))
+                    livingNeighbors++;
+            });
             
-            if(_livingCells.Contains(candidate))
+            
+            if(_livingCells.ContainsKey(candidate)) //already living
             {
                 if (livingNeighbors <= deathbyLoneliness || livingNeighbors >= deathbyOverpopulation)
-                {
-                    //do nothing
-                }
+                    resultDic[candidate] = CellAction.death;
                 else
-                {
-                    resultSet.Add(candidate);
-                }
+                    resultDic[candidate] = CellAction.stayinAlive;
             }
             else //not already living
             {
                 if (livingNeighbors >= minimumBirth && livingNeighbors <= maximumBirth)
-                {
-                    resultSet.Add(candidate);
-                }
+                    resultDic[candidate] = CellAction.birth;
             }
-            
         }
     }
 
-    private void VisualizeCells()
+    #region ==== Cell Vis Actions ====------------------
+
+
+    public void CellBirth(Vector3Int position)
     {
-        //clear and visualize
-        foreach (var cell in _cellObjects)
+        CellVis newCellVis = Instantiate(_cellPrefab, position, Quaternion.identity);
+        newCellVis.transform.parent = transform;
+        newCellVis.transform.localPosition = position;
+        newCellVis.transform.localScale = Vector3.one;
+        
+        newCellVis.Initialize(position, this);
+        _livingCells[position] = newCellVis;
+    }
+    
+    
+    public void CellDeath(Vector3Int position)
+    {
+        if (_livingCells.ContainsKey(position))
         {
-            Destroy(cell);
-        }
-        _cellObjects.Clear();
-        foreach (var livingCell in _livingCells)
-        {
-            GameObject cellVis = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cellVis.transform.parent = transform;
-            cellVis.transform.position = livingCell;
+            Destroy(_livingCells[position].gameObject);
+            _livingCells.Remove(position);
         }
     }
+    
+    public void CellStayinAlive(Vector3Int position)
+    {
+        if (_livingCells.ContainsKey(position))
+        {
+            _livingCells[position].Increment();
+        }
+    }
+    
+    public enum CellAction
+    {
+        birth, death, stayinAlive
+    }
+    
+
+    #endregion -----------------/Cell Vis Actions ====
+    
 }
