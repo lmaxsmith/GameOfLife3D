@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.1802516, g: 0.22567071, b: 0.30687967, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -457,12 +457,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   deathbyLoneliness: 2
-  deathbyOverpopulation: 4
+  deathbyOverpopulation: 9
   minimumBirth: 3
   maximumBirth: 3
   _generationInterval: 1
   _seedSize: {x: 10, y: 10, z: 10}
-  _seedProbability: 0.1
+  _seedProbability: 0.01
   _cellPrefab: {fileID: 6986521007762722683, guid: 83c2bc92a043345d3839eb434b413e52,
     type: 3}
   _cellMaterials:
