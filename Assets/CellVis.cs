@@ -4,6 +4,7 @@ public class CellVis : MonoBehaviour
 {
 	public int _age;
 	public Vector3Int _position;
+	public int _neighbors;
 	
 	private ConwayManager _manager;
     private MeshRenderer _renderer;

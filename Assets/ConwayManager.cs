@@ -67,7 +67,7 @@ public class ConwayManager : MonoBehaviour
             {
                 for (int z = -1; z <= 1; z++)
                 {
-                    if (x == 0 && y == 0 && z == 0) continue;
+                    //if (x == 0 && y == 0 && z == 0) continue;
                     action(position + new Vector3Int(x, y, z));
                 }
             }
@@ -130,6 +130,8 @@ public class ConwayManager : MonoBehaviour
         _generationCount++;
         _livingCellCount = _livingCells.Count;
 
+        
+        
 
         void CheckCandidate(Vector3Int candidate)
         {
@@ -145,6 +147,8 @@ public class ConwayManager : MonoBehaviour
             
             if(_livingCells.ContainsKey(candidate)) //already living
             {
+                _livingCells[candidate]._neighbors = livingNeighbors;
+                
                 if (livingNeighbors <= deathbyLoneliness || livingNeighbors >= deathbyOverpopulation)
                     resultDic[candidate] = CellAction.death;
                 else
