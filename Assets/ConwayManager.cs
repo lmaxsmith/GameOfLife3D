@@ -36,14 +36,15 @@ public class ConwayManager : MonoBehaviour
     #region ==== Private storage ====------------------
     
     private Dictionary<Vector3Int, CellVis> _livingCells = new Dictionary<Vector3Int, CellVis>();
-    private List<GameObject> _cellObjects = new List<GameObject>();
+    
 
     #endregion -----------------/Private storage ====
     
     // Start is called before the first frame update
     void Start()
     {
-        InitializeSeed();
+        //InitializeSeed();
+        //StartSimulating();
     }
 
     
@@ -52,12 +53,38 @@ public class ConwayManager : MonoBehaviour
     void Update()
     {
         //generation loop
-        if (Time.time - _lastGenerationTime > _generationInterval)
+        if (Time.time - _lastGenerationTime > _generationInterval && _isSimulating)
         {
             _lastGenerationTime = Time.time;
             EvaluateGeneration();
         }
     }
+
+    
+    public void StartSimulating()
+    {
+        _isSimulating = true;
+    }
+    bool _isSimulating = false;
+    
+    public void StopSimulating()
+    {
+        _isSimulating = false;
+    }
+    
+    public void Clear()
+    {
+        foreach (var cell in _livingCells)
+        {
+            Destroy(cell.Value.gameObject);
+        }
+        _livingCells.Clear();
+        
+        _generationCount = 0;
+        _livingCellCount = 0;
+    }
+    
+    
 
     public void IterateOnNeighbors(Vector3Int position, System.Action<Vector3Int> action)
     {
